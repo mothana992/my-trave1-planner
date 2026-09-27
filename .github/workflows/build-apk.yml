@@ -9,6 +9,8 @@ on:
       - 'icon.svg'
       - 'manifest.webmanifest'
       - 'sw.js'
+      - 'leaflet.js'
+      - 'leaflet.css'
   workflow_dispatch:
 jobs:
   apk:
@@ -27,9 +29,7 @@ jobs:
       - name: Create Android wrapper
         shell: bash
         run: |
-          mkdir -p android/app/src/main/java/com/rahlati/planner android/app/src/main/assets
-          cp index.html app.js style.css icon.svg manifest.webmanifest sw.js android/app/src/main/assets/
-          sed -i "s/crypto.randomUUID()/((crypto.randomUUID?.() || String(Date.now())+Math.random()))/" android/app/src/main/assets/app.js
+          mkdir -p android/app/src/main/java/com/rahlati/planner2 android/app/src/main/assets android/app/src/main/res/drawable
           cat > android/settings.gradle <<'GRADLE'
           pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
           dependencyResolutionManagement { repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS); repositories { google(); mavenCentral() } }
@@ -42,23 +42,26 @@ jobs:
           cat > android/app/build.gradle <<'GRADLE'
           plugins { id 'com.android.application' }
           android {
-            namespace 'com.rahlati.planner'
+            namespace 'com.rahlati.planner2'
             compileSdk 35
-            defaultConfig { applicationId 'com.rahlati.planner'; minSdk 26; targetSdk 35; versionCode 1; versionName '1.0' }
+            defaultConfig { applicationId 'com.rahlati.planner2'; minSdk 26; targetSdk 35; versionCode 1; versionName '1.0' }
           }
           GRADLE
           cat > android/app/src/main/AndroidManifest.xml <<'XML'
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
             <uses-permission android:name="android.permission.INTERNET"/>
-            <application android:label="رحلتي" android:usesCleartextTraffic="false" android:theme="@android:style/Theme.Material.Light.NoActionBar" android:allowBackup="true">
+            <application android:label="رحلتي" android:icon="@drawable/app_icon" android:usesCleartextTraffic="false" android:theme="@android:style/Theme.Material.Light.NoActionBar" android:allowBackup="true">
               <activity android:name=".MainActivity" android:exported="true">
                 <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
               </activity>
             </application>
           </manifest>
           XML
-          cat > android/app/src/main/java/com/rahlati/planner/MainActivity.java <<'JAVA'
-          package com.rahlati.planner;
+          cat > android/app/src/main/res/drawable/app_icon.xml <<'XML'
+          <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="96dp" android:height="96dp" android:viewportWidth="96" android:viewportHeight="96"><path android:fillColor="#173942" android:pathData="M0,0h96v96h-96z"/><path android:fillColor="#e7b292" android:pathData="M48,12 L56,40 L84,48 L56,56 L48,84 L40,56 L12,48 L40,40 Z"/><path android:fillColor="#d36a4b" android:pathData="M48,38a10,10 0,1 0,0.1 0"/></vector>
+          XML
+          cat > android/app/src/main/java/com/rahlati/planner2/MainActivity.java <<'JAVA'
+          package com.rahlati.planner2;
           import android.app.Activity;
           import android.os.Bundle;
           import android.webkit.WebView;
@@ -71,7 +74,7 @@ jobs:
           import android.view.WindowManager;
           public class MainActivity extends Activity {
             WebView web; ValueCallback<Uri[]> pending; static final int PICK=42;
-            @Override public void onCreate(Bundle b){super.onCreate(b);getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);web=new WebView(this);web.getSettings().setJavaScriptEnabled(true);web.getSettings().setDomStorageEnabled(true);web.getSettings().setAllowFileAccess(true);web.setWebViewClient(new WebViewClient(){@Override public boolean shouldOverrideUrlLoading(WebView v,String url){if(url.startsWith("file:")||url.startsWith("#"))return false;startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(url)));return true;}});web.setWebChromeClient(new WebChromeClient(){@Override public boolean onShowFileChooser(WebView v,ValueCallback<Uri[]> cb,FileChooserParams params){pending=cb;try{startActivityForResult(params.createIntent(),PICK);return true;}catch(Exception e){pending=null;return false;}}});setContentView(web);web.loadUrl("file:///android_asset/index.html");}
+            @Override public void onCreate(Bundle b){super.onCreate(b);getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);web=new WebView(this);web.getSettings().setJavaScriptEnabled(true);web.getSettings().setDomStorageEnabled(true);web.getSettings().setAllowFileAccess(true);web.getSettings().setUseWideViewPort(true);web.getSettings().setLoadWithOverviewMode(true);web.getSettings().setJavaScriptCanOpenWindowsAutomatically(false);web.getSettings().setUserAgentString(web.getSettings().getUserAgentString()+" Rahlati/2.0 (https://github.com/mothana992/my-trave1-planner)");web.setWebViewClient(new WebViewClient(){@Override public boolean shouldOverrideUrlLoading(WebView v,String url){if(url.startsWith("https://mothana992.github.io/my-trave1-planner/")||url.startsWith("#"))return false;startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(url)));return true;}@Override public boolean shouldOverrideUrlLoading(WebView v,android.webkit.WebResourceRequest req){return shouldOverrideUrlLoading(v,req.getUrl().toString());}});web.setWebChromeClient(new WebChromeClient(){@Override public boolean onShowFileChooser(WebView v,ValueCallback<Uri[]> cb,FileChooserParams params){pending=cb;try{startActivityForResult(params.createIntent(),PICK);return true;}catch(Exception e){pending=null;return false;}}});setContentView(web);web.loadUrl("https://mothana992.github.io/my-trave1-planner/");}
             @Override protected void onActivityResult(int request,int result,Intent data){super.onActivityResult(request,result,data);if(request==PICK&&pending!=null){pending.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(result,data));pending=null;}}
             @Override public void onBackPressed(){if(web.canGoBack())web.goBack();else super.onBackPressed();}
           }
