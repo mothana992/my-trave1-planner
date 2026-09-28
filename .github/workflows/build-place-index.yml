@@ -15,8 +15,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install official Overture data client
-        run: python -m pip install overturemaps==1.0.2
+      - name: Install query engine for Overture's public dataset
+        run: python -m pip install duckdb==1.4.3
       - name: Extract city place indexes
         run: python build-overture-index.py
       - name: Publish index
