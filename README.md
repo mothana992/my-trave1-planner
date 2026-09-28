@@ -1,6 +1,6 @@
 # Rahlati / رحلتي
 
-Arabic and English trip planner for mobile and desktop. Create trips and place lists, search places by name, assign stops to dates, reorder stops, see an interactive map, estimate straight-line distances, open individual or full-day directions in Google Maps, save your own comments and photos, store bookings with small attachments, split expenses in Jordanian dinars, maintain a checklist and notes, and export/import JSON backups.
+Arabic and English trip planner for mobile and desktop. Start typing to select places and store their coordinates, pick a base hotel, assign stops to dates or preview an automatic area-based plan, view numbered stops on the interactive map, open directions in Google Maps, save comments and photos, store bookings, split expenses in JOD, and export/import JSON backups or a KML map.
 
 ## Hosting
 
@@ -8,10 +8,12 @@ GitHub Pages publishes the repository root at https://mothana992.github.io/my-tr
 
 ## Place search and Google Maps
 
-The in-app place search uses OpenStreetMap Nominatim after the user presses Search. The public search endpoint requires an internet connection and has a usage limit. Google Maps links and directions open directly in Google Maps (or a browser). You can also paste a Google Maps share link when adding a place. Direct Google Places autocomplete, reviews, and photos require a Google Cloud project with Places API enabled, billing, a restricted key, and an appropriate integration. This project does not claim to provide those Google services without a key. Comments in the planner are the user's own notes, not Google reviews.
+As-you-type suggestions use the public Photon demo search service, backed by OpenStreetMap data. Requests are debounced. This public endpoint is intended for moderate use and has no uptime guarantee. Google Maps directions open directly in Google Maps (or a browser). You can also paste a Google Maps share link. Direct Google Places autocomplete and an embedded Google map require a Google Cloud project with its APIs enabled, billing, and a properly restricted key. The built-in map uses Leaflet and OpenStreetMap tiles. Comments in the planner are your own notes, not Google reviews.
+
+The Google Maps export downloads a KML file for **Google My Maps** import. It does not silently write to your saved Google Maps lists, which requires a separate authenticated Google integration. My Maps import is done through a browser. On Android, open the website in Chrome if your WebView does not download files.
 
 ## Data
 
 Trip data and compressed uploaded photos are stored on the device. The website and APK have separate browser storage; export and import a backup to transfer a trip. Clearing browser or app data will erase local trips unless backed up. Shared multi-device synchronization requires a backend and account system. Shared snapshots are JSON files; they do not update collaborators automatically. Attachments count toward limited browser storage.
 
-The map uses Leaflet 1.9.4 and OpenStreetMap tiles. The distance display uses straight-line coordinates and speed assumptions, not live routing or traffic. The day-order suggestion uses a nearest-neighbor calculation and can be undone.
+The map uses Leaflet 1.9.4 and OpenStreetMap tiles. The displayed line and distance estimates are straight-line approximations, not live routing or traffic. The daily plan clusters selected places by geographic proximity and orders stops from the hotel. Preview it before applying it; the old day assignments are overwritten for geocoded places and can be edited afterward. Google Maps links include at most 3 intermediate waypoints per segment for mobile compatibility.
