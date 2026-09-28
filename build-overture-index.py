@@ -5,13 +5,25 @@ The raw data stays on the runner; only a compact JSON index is published.
 """
 import json
 import duckdb
+import unicodedata
 from pathlib import Path
 
 AREAS = {
     "istanbul": (28.65, 40.82, 29.52, 41.32),
     "bursa": (28.45, 39.90, 29.45, 40.45),
 }
-MAX_SIZE = 45_000_000  # GitHub Pages has a 1 GB site limit; keep each index small.
+MAX_SHARD_SIZE = 12_000_000
+
+
+def bucket(name):
+    folded = name.lower().translate(str.maketrans({"ı": "i", "ğ": "g", "ş": "s", "ç": "c", "ö": "o", "ü": "u"}))
+    folded = "".join(c for c in unicodedata.normalize("NFKD", folded) if not unicodedata.combining(c))
+    for word in folded.split():
+        if word in {"the", "a", "an", "hotel", "otel", "restaurant", "restoran", "فندق", "مطعم"}:
+            continue
+        first = word[0]
+        return first if first in "abcdefghijklmnopqrstuvwxyz" else "other"
+    return "other"
 
 
 def compact(props):
@@ -36,7 +48,7 @@ def compact(props):
             alt.append(value)
         if len(alt) >= 3:
             break
-    return [name, text, round(lat, 6), round(lon, 6), taxonomy.get("primary") or props.get("basic_category") or "", props.get("id") or "", alt]
+    return [name, text, round(lat, 6), round(lon, 6), taxonomy.get("primary") or props.get("basic_category") or "", str(props.get("id") or "")[:12], alt]
 
 
 def build(area, bbox):
@@ -51,13 +63,14 @@ def build(area, bbox):
                  AND names.primary IS NOT NULL"""
     cursor = connection.execute(query, [source, west, east, south, north])
     keys = [col[0] for col in cursor.description]
-    output = Path("data") / f"{area}.json"
-    output.parent.mkdir(parents=True, exist_ok=True)
+    output = Path("data") / area
+    output.mkdir(parents=True, exist_ok=True)
+    writers = {}
+    counts = {}
     found = set()
     examples = {term: [] for term in ("boac", "mahal antep", "point hotel", "akgün")}
     count = 0
-    with output.open("w", encoding="utf-8") as destination:
-        destination.write('{"source":"Overture Maps 2026-09-23.1","places":[')
+    try:
         while rows := cursor.fetchmany(1000):
             for row in rows:
                 try:
@@ -73,21 +86,29 @@ def build(area, bbox):
                 for term, matches in examples.items():
                     if term in place[0].casefold() and len(matches) < 5:
                         matches.append(place[:5])
-                if count:
+                shard = bucket(place[0])
+                if shard not in writers:
+                    writers[shard] = (output / f"{shard}.json").open("w", encoding="utf-8")
+                    writers[shard].write('{"source":"Overture Maps 2026-09-23.1","places":[')
+                    counts[shard] = 0
+                destination = writers[shard]
+                if counts[shard]:
                     destination.write(",")
                 destination.write(json.dumps(place, ensure_ascii=False, separators=(",", ":")))
+                counts[shard] += 1
                 count += 1
-        destination.write("]}")
-    size = output.stat().st_size
-    print(f"{area}: {count} places, {size / 1_000_000:.2f} MB", flush=True)
-    if size > MAX_SIZE:
-        output.unlink()
-        raise RuntimeError(f"{area} index exceeds size limit")
-    if count < 1000:
-        output.unlink()
-        raise RuntimeError(f"{area} has too few places; aborting publication")
+    finally:
+        for writer in writers.values():
+            writer.write("]}")
+            writer.close()
+    size = sum(file.stat().st_size for file in output.glob("*.json"))
+    print(f"{area}: {count} places, {size / 1_000_000:.2f} MB across {len(writers)} shards", flush=True)
     for term, matches in examples.items():
         print(f"{area}: {term}: {matches or 'not indexed'}", flush=True)
+    if any(file.stat().st_size > MAX_SHARD_SIZE for file in output.glob("*.json")):
+        raise RuntimeError(f"{area} has a shard exceeding its size limit")
+    if count < 1000:
+        raise RuntimeError(f"{area} has too few places; aborting publication")
 
 
 if __name__ == "__main__":
