@@ -29,7 +29,7 @@ jobs:
       - name: Create Android wrapper
         shell: bash
         run: |
-          mkdir -p android/app/src/main/java/com/rahlati/planner2 android/app/src/main/assets android/app/src/main/res/drawable
+          mkdir -p android/app/src/main/java/com/rahlati/planner3 android/app/src/main/assets android/app/src/main/res/drawable
           cat > android/settings.gradle <<'GRADLE'
           pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
           dependencyResolutionManagement { repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS); repositories { google(); mavenCentral() } }
@@ -42,14 +42,16 @@ jobs:
           cat > android/app/build.gradle <<'GRADLE'
           plugins { id 'com.android.application' }
           android {
-            namespace 'com.rahlati.planner2'
+            namespace 'com.rahlati.planner3'
             compileSdk 35
-            defaultConfig { applicationId 'com.rahlati.planner2'; minSdk 26; targetSdk 35; versionCode 1; versionName '1.0' }
+            defaultConfig { applicationId 'com.rahlati.planner3'; minSdk 26; targetSdk 35; versionCode 3; versionName '3.0' }
           }
           GRADLE
           cat > android/app/src/main/AndroidManifest.xml <<'XML'
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
             <uses-permission android:name="android.permission.INTERNET"/>
+            <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+            <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
             <application android:label="رحلتي" android:icon="@drawable/app_icon" android:usesCleartextTraffic="false" android:theme="@android:style/Theme.Material.Light.NoActionBar" android:allowBackup="true">
               <activity android:name=".MainActivity" android:exported="true">
                 <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
@@ -60,8 +62,8 @@ jobs:
           cat > android/app/src/main/res/drawable/app_icon.xml <<'XML'
           <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="96dp" android:height="96dp" android:viewportWidth="96" android:viewportHeight="96"><path android:fillColor="#173942" android:pathData="M0,0h96v96h-96z"/><path android:fillColor="#e7b292" android:pathData="M48,12 L56,40 L84,48 L56,56 L48,84 L40,56 L12,48 L40,40 Z"/><path android:fillColor="#d36a4b" android:pathData="M48,38a10,10 0,1 0,0.1 0"/></vector>
           XML
-          cat > android/app/src/main/java/com/rahlati/planner2/MainActivity.java <<'JAVA'
-          package com.rahlati.planner2;
+          cat > android/app/src/main/java/com/rahlati/planner3/MainActivity.java <<'JAVA'
+          package com.rahlati.planner3;
           import android.app.Activity;
           import android.os.Bundle;
           import android.webkit.WebView;
@@ -73,9 +75,10 @@ jobs:
           import android.view.View;
           import android.view.WindowManager;
           public class MainActivity extends Activity {
-            WebView web; ValueCallback<Uri[]> pending; static final int PICK=42;
-            @Override public void onCreate(Bundle b){super.onCreate(b);getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);web=new WebView(this);web.getSettings().setJavaScriptEnabled(true);web.getSettings().setDomStorageEnabled(true);web.getSettings().setAllowFileAccess(true);web.getSettings().setUseWideViewPort(true);web.getSettings().setLoadWithOverviewMode(true);web.getSettings().setJavaScriptCanOpenWindowsAutomatically(false);web.getSettings().setUserAgentString(web.getSettings().getUserAgentString()+" Rahlati/2.0 (https://github.com/mothana992/my-trave1-planner)");web.setWebViewClient(new WebViewClient(){@Override public boolean shouldOverrideUrlLoading(WebView v,String url){if(url.startsWith("https://mothana992.github.io/my-trave1-planner/")||url.startsWith("#"))return false;startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(url)));return true;}@Override public boolean shouldOverrideUrlLoading(WebView v,android.webkit.WebResourceRequest req){return shouldOverrideUrlLoading(v,req.getUrl().toString());}});web.setWebChromeClient(new WebChromeClient(){@Override public boolean onShowFileChooser(WebView v,ValueCallback<Uri[]> cb,FileChooserParams params){pending=cb;try{startActivityForResult(params.createIntent(),PICK);return true;}catch(Exception e){pending=null;return false;}}});setContentView(web);web.loadUrl("https://mothana992.github.io/my-trave1-planner/");}
-            @Override protected void onActivityResult(int request,int result,Intent data){super.onActivityResult(request,result,data);if(request==PICK&&pending!=null){pending.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(result,data));pending=null;}}
+            WebView web; ValueCallback<Uri[]> pending; android.webkit.GeolocationPermissions.Callback geoCallback; String geoOrigin; byte[] pendingData; static final int PICK=42, GEO=43, SAVE=44;
+            @Override public void onCreate(Bundle b){super.onCreate(b);getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);web=new WebView(this);web.getSettings().setJavaScriptEnabled(true);web.getSettings().setDomStorageEnabled(true);web.getSettings().setGeolocationEnabled(true);web.getSettings().setAllowFileAccess(true);web.getSettings().setUseWideViewPort(true);web.getSettings().setLoadWithOverviewMode(true);web.getSettings().setJavaScriptCanOpenWindowsAutomatically(false);web.getSettings().setUserAgentString(web.getSettings().getUserAgentString()+" Rahlati/3.0 (https://github.com/mothana992/my-trave1-planner)");web.addJavascriptInterface(new Object(){@android.webkit.JavascriptInterface public void save(String filename,String mime,String base64){runOnUiThread(()->{try{pendingData=android.util.Base64.decode(base64,android.util.Base64.DEFAULT);Intent intent=new Intent(Intent.ACTION_CREATE_DOCUMENT);intent.addCategory(Intent.CATEGORY_OPENABLE);intent.setType(mime);intent.putExtra(Intent.EXTRA_TITLE,filename);startActivityForResult(intent,SAVE);}catch(Exception e){pendingData=null;}});}},"RahlatiAndroid");web.setWebViewClient(new WebViewClient(){@Override public boolean shouldOverrideUrlLoading(WebView v,String url){if(url.startsWith("https://mothana992.github.io/my-trave1-planner/")||url.startsWith("#"))return false;startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(url)));return true;}@Override public boolean shouldOverrideUrlLoading(WebView v,android.webkit.WebResourceRequest req){return shouldOverrideUrlLoading(v,req.getUrl().toString());}});web.setWebChromeClient(new WebChromeClient(){@Override public void onGeolocationPermissionsShowPrompt(String origin,android.webkit.GeolocationPermissions.Callback cb){geoOrigin=origin;geoCallback=cb;if(checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION)==android.content.pm.PackageManager.PERMISSION_GRANTED)cb.invoke(origin,true,false);else requestPermissions(new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},GEO);}@Override public boolean onShowFileChooser(WebView v,ValueCallback<Uri[]> cb,FileChooserParams params){pending=cb;try{startActivityForResult(params.createIntent(),PICK);return true;}catch(Exception e){pending=null;return false;}}});setContentView(web);web.loadUrl("https://mothana992.github.io/my-trave1-planner/");}
+            @Override protected void onActivityResult(int request,int result,Intent data){super.onActivityResult(request,result,data);if(request==PICK&&pending!=null){pending.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(result,data));pending=null;}if(request==SAVE&&pendingData!=null){if(result==RESULT_OK&&data!=null)try(java.io.OutputStream out=getContentResolver().openOutputStream(data.getData())){out.write(pendingData);}catch(Exception ignored){}pendingData=null;}}
+            @Override public void onRequestPermissionsResult(int request,String[] permissions,int[] grants){super.onRequestPermissionsResult(request,permissions,grants);if(request==GEO&&geoCallback!=null){geoCallback.invoke(geoOrigin,grants.length>0&&grants[0]==android.content.pm.PackageManager.PERMISSION_GRANTED,false);geoCallback=null;}}
             @Override public void onBackPressed(){if(web.canGoBack())web.goBack();else super.onBackPressed();}
           }
           JAVA
