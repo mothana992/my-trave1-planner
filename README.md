@@ -21,3 +21,7 @@ The map uses Leaflet 1.9.4 and OpenStreetMap tiles. The displayed line and dista
 ### Confirming a place in Turkey
 
 If a business is missing from OpenStreetMap search, choose **Add manually**, enter its name and address, then tap the exact spot in the built-in map before saving. The selected coordinates are saved with the trip and used for the numbered map pins and navigation. The hotel has the same **Add manually** option. Check the address and pin before following directions; similar hotel names can refer to different properties. This does not provide a complete business autocomplete directory.
+
+### Turkey place search (Istanbul and Bursa)
+
+As-you-type search uses a compact, city-specific index built from Overture Maps Places release 2026-09-23.1. The index is divided by the first letter of the place name, and the app downloads only the needed letter for a selected trip city. Photon/OpenStreetMap remains a live fallback. Turkish letters and common Arabic city/place spellings are normalized, and suggestions retain exact coordinates for map pins and directions. The independent `Build free Istanbul and Bursa place index` GitHub workflow rebuilds the snapshots; update its release path when Overture publishes a new release. Overture place coverage and exact business naming vary; verify the displayed address and map pin before relying on directions. Data © Overture Maps Foundation; individual features have their source license recorded upstream.
