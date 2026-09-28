@@ -17,3 +17,10 @@
 .city-chips,.city-suggestions{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}.city-chip,.city-option{border:1px solid #bfd9d1;border-radius:999px;background:#e9f4f0;color:#174a48;padding:7px 11px;font-weight:700}.city-option{background:#fff}.city-suggestions{max-height:170px;overflow-y:auto}.city-chips:empty{display:none}
 
 .place-picker{height:280px;border-radius:14px;overflow:hidden;background:#e8eee9;margin:12px 0;touch-action:pan-x pan-y}
+
+/* A usable map viewport on phones, with room for the bottom navigation. */
+.map-frame{height:clamp(380px,60dvh,640px);border:1px solid #dce8e3;box-shadow:0 8px 26px #17394218;border-radius:20px;isolation:isolate}
+.map-note{margin-bottom:calc(110px + env(safe-area-inset-bottom))}
+@media(max-width:600px){.map-frame{height:clamp(420px,63dvh,650px)}.leaflet-control-attribution{font-size:10px!important}}
+
+.map-holder{position:relative;margin-top:10px}.map-holder .map-frame{display:block}.map-style-switch{position:absolute;z-index:450;top:12px;right:12px;background:#fff;color:#173942;border:1px solid #d2ddd9;border-radius:12px;padding:9px 12px;font-weight:800;box-shadow:0 2px 12px #17394244}.map-style-switch:focus-visible{outline:3px solid #d36a4b}
