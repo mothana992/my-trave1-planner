@@ -1,0 +1,4 @@
+dist/
+wrangler.toml
+.dev.vars
+setup-token.txt
