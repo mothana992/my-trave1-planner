@@ -5,6 +5,7 @@
   const oldCard = placeCard;
   const oldRating = placeRating;
   const oldPersist = persist;
+  const oldExportKml = exportKml;
 
   function isPreview(x) { return x?.id === previewId; }
   function primary(x, date) {
@@ -22,6 +23,18 @@
     trips.forEach(renumber);
     oldPersist();
   };
+  exportKml = function () {
+    const x=trip();
+    if (!isPreview(x)) return oldExportKml();
+    const csv=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+    const rows=[['Location','Place','Day','Number','Kind','Note']];
+    rows.push([[x.hotel.name,x.hotel.address].join(', '),x.hotel.name,'Hotel','','Hotel','']);
+    for (const p of x.places.slice().sort((a,b)=>(a.sequence??0)-(b.sequence??0))) {
+      rows.push([[p.name,p.address||x.destination].join(', '),p.name,p.date,p.sequence,p.listId==='extra'?'Extra':'Main',p.note||'']);
+    }
+    saveFile('rahlati-istanbul-2026.csv','text/csv;charset=utf-8','\ufeff'+rows.map(row=>row.map(csv).join(',')).join('\r\n'));
+    modal(lang==='ar'?'تصدير كل الأماكن إلى Google My Maps':'Export all places to Google My Maps',`<p>${lang==='ar'?'تم تنزيل CSV يضم كل الأماكن. في Google My Maps أنشئ خريطة واستورد الملف، واختَر عمود Location للموقع، ثم استخدم Day لتلوين الأيام. راجع نتائج الأماكن التي بلا عنوان محدد.':'The CSV includes every place. In Google My Maps import it using Location for positions and Day for colors. Verify places without exact addresses.'}</p><a class="btn primary full" href="https://www.google.com/mymaps" target="_blank" rel="noopener">Google My Maps ↗</a>`,null);
+  };
   placeRating = function (p) {
     if (p.ratingSource === 'wanderlog-snapshot' && p.rating) return `<span class="place-rating">★ ${Number(p.rating).toFixed(1)} <small>${lang === 'ar' ? 'Wanderlog / Google · 29 سبتمبر' : 'Wanderlog / Google · Sep 29'}</small></span>`;
     return oldRating(p);
@@ -33,7 +46,7 @@
     return html;
   };
   home = function () {
-    const banner = `<section class="container preview-entry"><div><span class="eyebrow">${lang === 'ar' ? 'خطة إسطنبول' : 'Istanbul plan'}</span><h2>${lang === 'ar' ? 'أول يومين جاهزين للمراجعة' : 'First two days ready to review'}</h2><p>${lang === 'ar' ? 'انطلاق 10:00 من فندق Akgün، أوقات الزيارة، الأماكن الإضافية، وروابط Google Maps.' : 'Start at 10:00 from Akgün with visit times, nearby extras and Google Maps links.'}</p></div><button class="btn primary" data-action="importPreview">${lang === 'ar' ? 'افتح خطة أول يومين' : 'Open first two days'} ↗</button></section>`;
+    const banner = `<section class="container preview-entry"><div><span class="eyebrow">${lang === 'ar' ? 'خطة إسطنبول' : 'Istanbul plan'}</span><h2>${lang === 'ar' ? 'برنامج الأيام التسعة جاهز' : 'Your nine-day plan is ready'}</h2><p>${lang === 'ar' ? 'انطلاق 10:00 من فندق Akgün، أوقات الزيارة، أماكن إضافية حسب المنطقة، وروابط Google Maps.' : 'Start at 10:00 from Akgün with visit times, nearby extras and Google Maps links.'}</p></div><button class="btn primary" data-action="importPreview">${lang === 'ar' ? 'افتح خطة الرحلة' : 'Open the trip plan'} ↗</button></section>`;
     return oldHome() + banner;
   };
 
@@ -44,7 +57,7 @@
   function schedule(x) {
     const dates=days(x),d=dates[day],main=primary(x,d),alternate=extras(x,d),info=x.dayPlans?.[d];
     const route=routeGroups(main).map((_,i)=>`<button class="btn primary" data-action="previewRoute" data-date="${d}" data-part="${i}">${lang === 'ar' ? 'مسار الأماكن الأساسية' : 'Main route'}${main.length>4?' '+(i+1):''} · Google Maps ↗</button>`).join('');
-    return `<div class="day-tabs">${dates.map((v,i)=>`<button class="day-tab ${day===i?'active':''}" data-day="${i}">${t('day')} ${i+1} · ${fmt(v)}</button>`).join('')}</div><section class="preview-day-heading"><span class="preview-day-dot" style="background:${colorForDay(x,d)}"></span><div><small>${t('day')} ${day+1} · ${fmt(d)}</small><h2>${esc(dayTitle(x,d) || (lang === 'ar' ? 'بانتظار إكمال التخطيط' : 'Planning in progress'))}</h2><p>${esc(lang === 'ar' ? info?.introAr || 'سأرتّب أماكن هذا اليوم بعد مراجعة أول يومين.' : info?.introEn || 'This day follows after reviewing the first two days.')}</p></div></section><div class="action-bar preview-toolbar">${route}<button class="btn" data-action="addPlace">+ ${t('addPlace')}</button></div>${main.length ? `<section class="panel preview-stops"><h3>${lang === 'ar' ? 'المسار الأساسي' : 'Main route'}</h3><div class="hotel-start">⌂ ${t('hotelFirst')}: <strong>${esc(x.hotel.name)}</strong> · 10:00</div>${main.map((p,i)=>`<div class="preview-stop">${placeCard(p,true)}<p class="preview-stop-note">${esc(p.note || '')}</p>${i<main.length-1?`<div class="preview-transfer">${lang === 'ar' ? 'انتقال واستراحة حتى الموعد التالي' : 'Travel and rest before the next stop'} · ${esc(main[i+1].time || '')}</div>`:''}</div>`).join('')}</section>` : `<div class="empty"><p>${lang === 'ar' ? 'لسه ما وزّعت أماكن هذا اليوم.' : 'No places scheduled yet.'}</p></div>`}${alternate.length?`<section class="panel preview-extras"><h3>${lang === 'ar' ? 'أماكن إضافية قريبة' : 'Extra nearby places'} <small>${alternate.length}</small></h3><p class="muted">${lang === 'ar' ? 'بدائل قريبة من مسار اليوم، بدون وقت إلزامي. تقدر تنقل أي واحد للمسار الأساسي.' : 'Nearby options with no fixed time. Move any place into your main route.'}</p>${alternate.map(p=>`<div class="preview-extra-item">${placeCard(p,false)}<button class="tiny" data-action="promoteExtra" data-id="${esc(p.id)}">+ ${lang==='ar'?'انقله للمسار الأساسي':'Add to main route'}</button></div>`).join('')}</section>`:''}`;
+    return `<div class="day-tabs">${dates.map((v,i)=>`<button class="day-tab ${day===i?'active':''}" data-day="${i}">${t('day')} ${i+1} · ${fmt(v)}</button>`).join('')}</div><section class="preview-day-heading"><span class="preview-day-dot" style="background:${colorForDay(x,d)}"></span><div><small>${t('day')} ${day+1} · ${fmt(d)}</small><h2>${esc(dayTitle(x,d) || (lang === 'ar' ? 'بانتظار إكمال التخطيط' : 'Planning in progress'))}</h2><p>${esc(lang === 'ar' ? info?.introAr || 'سأرتّب أماكن هذا اليوم بعد مراجعة أول يومين.' : info?.introEn || 'This day follows after reviewing the first two days.')}</p></div></section><div class="action-bar preview-toolbar">${route}<button class="btn" data-action="addPlace">+ ${t('addPlace')}</button></div>${main.length ? `<section class="panel preview-stops"><h3>${lang === 'ar' ? 'المسار الأساسي' : 'Main route'}</h3><div class="hotel-start">⌂ ${t('hotelFirst')}: <strong>${esc(x.hotel.name)}</strong> · 10:00</div>${main.map((p,i)=>`<div class="preview-stop">${placeCard(p,true)}<p class="preview-stop-note">${esc(p.note || '')}</p>${i<main.length-1?`<div class="preview-transfer">${lang === 'ar' ? 'انتقال واستراحة حتى الموعد التالي' : 'Travel and rest before the next stop'} · ${esc(main[i+1].time || '')}</div>`:''}</div>`).join('')}</section>` : `<div class="empty"><p>${lang === 'ar' ? 'لسه ما وزّعت أماكن هذا اليوم.' : 'No places scheduled yet.'}</p></div>`}${alternate.length?`<details class="panel preview-extras" ${alternate.length<=4?'open':''}><summary>${lang === 'ar' ? 'أماكن إضافية قريبة' : 'Extra nearby places'} <small>${alternate.length}</small></summary><p class="muted">${lang === 'ar' ? 'بدائل قريبة من مسار اليوم، بدون وقت إلزامي. تقدر تنقل أي واحد للمسار الأساسي.' : 'Nearby options with no fixed time. Move any place into your main route.'}</p>${alternate.map(p=>`<div class="preview-extra-item">${placeCard(p,false)}<button class="tiny" data-action="promoteExtra" data-id="${esc(p.id)}">+ ${lang==='ar'?'انقله للمسار الأساسي':'Add to main route'}</button></div>`).join('')}</details>`:''}`;
   }
   function mapPanel(x) {
     const dates=days(x),list=x.places.filter(p=>mapFilter==='all'||p.date===mapFilter).sort((a,b)=>a.sequence-b.sequence);
@@ -61,11 +74,20 @@
     try {
       let x=trips.find(isPreview);
       if (!x) {
-        const response=await fetch('./istanbul-preview.json?v=32');
+        const response=await fetch('./istanbul-preview.json?v=33');
         if (!response.ok) throw Error('Unable to load trip');
-        x=await response.json();
-        if (!Array.isArray(x.places) || days(x).length!==9) throw Error('Invalid trip data');
-        trips.unshift(x);
+        const seed=await response.json();
+        if (!Array.isArray(seed.places) || days(seed).length!==9) throw Error('Invalid trip data');
+        x=seed;trips.unshift(x);
+      } else if (Number(x.previewVersion||1)<2) {
+        const response=await fetch('./istanbul-preview.json?v=33');
+        if (!response.ok) throw Error('Unable to load trip');
+        const seed=await response.json();
+        if (!Array.isArray(seed.places) || seed.places.length!==128) throw Error('Invalid trip data');
+        const existing=new Set(x.places.map(p=>p.id));
+        for (const p of seed.places) if (!existing.has(p.id) && !/^w\d\d$/.test(p.id)) x.places.push(p);
+        x.dayPlans={...seed.dayPlans,...x.dayPlans};
+        x.title=seed.title;x.notes=seed.notes;x.previewVersion=2;
       }
       current=x.id;tab='itinerary';day=0;mapFilter='all';persist();render();
       if (location.search.includes('plan=istanbul-preview')) history.replaceState(null,'',location.pathname);
@@ -86,6 +108,6 @@
       persist();render();
     }
   });
-  if (new URLSearchParams(location.search).get('plan')==='istanbul-preview') importPreview();
+  if (new URLSearchParams(location.search).get('plan')==='istanbul-preview' || isPreview(trip()) && Number(trip().previewVersion||1)<2) importPreview();
   else if (!trip()) render();
 })();
