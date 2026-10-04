@@ -29,3 +29,26 @@ As-you-type search uses a compact, city-specific index built from Overture Maps 
 ## Istanbul itinerary
 
 Open `?plan=istanbul-preview` on the published site to import the nine-day Istanbul plan. It contains 128 unique places from the shared Wanderlog list (two duplicate entries removed), with scheduled stops, nearby extras and an optional final day. Existing two-day imports receive the remaining days without replacing edits to the first two days. Day routes open in Google Maps in mobile-compatible segments. Place ratings shown for a subset are a dated snapshot from Wanderlog, not a live Google Places feed; other places link to Google Maps for verification. Places without verified coordinates still open by name and area in Google Maps; My Maps will geocode them during CSV import, so check ambiguous names.
+
+## Companion workspace (v41)
+
+The responsive workspace includes a desktop sidebar, mobile navigation, trip overview,
+per-day cards, main/extra stop separation, saved-place text/category/date/status search,
+quick day moves, daily notes, family packing templates, category spending breakdowns,
+a manual exchange-rate calculator, and a print-friendly itinerary (browser Print → PDF).
+The settings screen exports all trips in one backup; importing that backup creates copies
+and does not replace trips already on the device. There is no automatic cross-device sync.
+
+Day checks flag overlapping visit/transfer times, missing coordinates, and busy days.
+Transfers use straight-line distance with a 1.3 multiplier and a mode-dependent speed;
+unknown locations use a 20-minute placeholder. These are not live road/transit durations.
+Scheduling starts at 10:00 by default, permits rest buffers, preserves existing times when
+selected, excludes extras, refuses schedules that exceed midnight, and supports undo.
+Nearest-stop ordering starts at the hotel and requires coordinates; review the proposed
+order before applying, then review existing reservation times. Venue hours are not verified.
+
+The old destructive one-time reset has been removed. Offline cache URLs match the plan
+loader, and visited place-index shards are cached. Browser storage still needs regular
+exported backups, especially when storing photos or booking attachments.
+
+Run regression checks with `node --test planner-core.test.cjs app-smoke.test.cjs`.

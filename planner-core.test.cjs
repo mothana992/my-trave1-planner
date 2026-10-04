@@ -1,0 +1,10 @@
+const test=require('node:test'),assert=require('node:assert/strict'),C=require('./planner-core.js');
+const p=(id,time,lat=41,lon=29)=>({id,name:id,time,lat,lon,duration:60,date:'2026-10-10',order:Number(id)||0});
+test('zero coordinates valid, missing and out-of-range coordinates rejected',()=>{assert(C.coordinates({lat:0,lon:0}));for(const x of [{lat:null,lon:3},{lat:undefined,lon:3},{lat:91,lon:3}])assert(!C.coordinates(x));});
+test('main schedule excludes extras and other dates',()=>{const x={places:[p('1','10:00'),{...p('2','11:00'),listId:'extra'},{...p('3','12:00'),date:'2026-10-11'}]};assert.deepEqual(C.main(x,'2026-10-10').map(p=>p.id),['1']);});
+test('conflicts account for visit time and transfer, unknown locations flagged',()=>{const x={places:[p('1','10:00'),p('2','10:30',null,null)]};const a=C.audit(x,'2026-10-10');assert.equal(a.unknown,1);assert(a.warnings.some(w=>w.type==='overlap'));});
+test('schedule includes a break and travel, defaults to 10am',()=>{assert.deepEqual(C.schedule([p('1',''),p('2','')]),[{id:'1',time:'10:00'},{id:'2',time:'11:25'}]);});
+test('manual times preserved unless explicitly replaced',()=>{assert.equal(C.schedule([p('1','14:00')])[0].time,'14:00');assert.equal(C.schedule([p('1','14:00')],{keep:false})[0].time,'10:00');});
+test('overflow refuses a partial day instead of silently wrapping',()=>{assert.throws(()=>C.schedule([p('1','')],{start:'23:30'}),/DAY_OVERFLOW/);});
+test('hotel anchored ordering does not mutate source',()=>{let list=[p('1','',41,29.3),p('2','',41,29.01)];assert.deepEqual(C.nearest(list,{lat:41,lon:29}).map(p=>p.id),['2','1']);assert.equal(list[0].id,'1');});
+test('Arabic and Turkish search combine with category/date/status filters',()=>{const list=[{...p('1',''),name:'İstanbul café',category:'cafe',visited:true},{...p('2',''),name:'إسطنبول',category:'food'}];assert.equal(C.filter(list,{query:'istanbul',status:'visited'}).length,1);assert.equal(C.filter(list,{query:'اسطنبول',category:'food'}).length,1);assert.equal(C.filter(list,{date:'2026-10-11'}).length,0);});
