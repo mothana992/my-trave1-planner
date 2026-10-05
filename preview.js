@@ -74,13 +74,13 @@
     try {
       let x=trips.find(isPreview);
       if (!x) {
-        const response=await fetch('./istanbul-preview.json?v=44');
+        const response=await fetch('./istanbul-preview.json?v=45');
         if (!response.ok) throw Error('Unable to load trip');
         const seed=await response.json();
         if (!Array.isArray(seed.places) || days(seed).length!==9) throw Error('Invalid trip data');
         x=seed;trips.unshift(x);
       } else if (Number(x.previewVersion||1)<2) {
-        const response=await fetch('./istanbul-preview.json?v=44');
+        const response=await fetch('./istanbul-preview.json?v=45');
         if (!response.ok) throw Error('Unable to load trip');
         const seed=await response.json();
         if (!Array.isArray(seed.places) || seed.places.length!==128) throw Error('Invalid trip data');
