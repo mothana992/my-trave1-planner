@@ -1,5 +1,5 @@
-const CACHE='rahlati-v47';
-const ASSETS=['./','./index.html','./style.css?v=47','./upgrade.css?v=47','./planner-core.js?v=47','./app.js?v=47','./upgrade.js?v=47','./preview.js?v=47','./istanbul-preview.json?v=47','./venue-guide.js?v=47','./trip-assistant.js?v=47','./transit.js?v=47','./transit.css?v=47','./trip-plan.js?v=47','./simple.js?v=47','./simple.css?v=47','./icon.svg','./manifest.webmanifest'];
+const CACHE='rahlati-v48';
+const ASSETS=['./','./index.html','./style.css?v=48','./upgrade.css?v=48','./planner-core.js?v=48','./app.js?v=48','./upgrade.js?v=48','./preview.js?v=48','./istanbul-preview.json?v=48','./venue-guide.js?v=48','./trip-assistant.js?v=48','./transit.js?v=48','./transit.css?v=48','./trip-plan.js?v=48','./simple.js?v=48','./simple.css?v=48','./icon.svg','./manifest.webmanifest'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('rahlati-')&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{

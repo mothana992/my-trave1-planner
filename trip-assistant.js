@@ -2,7 +2,7 @@
 (function(){
 'use strict';
 const L=(a,b)=>lang==='ar'?a:b,C=PlannerCore,T=RahlatiTransit,G=VenueGuide,oldCard=placeCard,oldTab=renderTab;
-const profile=p=>G.profiles[p.name]||{minutes:['food','cafe'].includes(p.category)?45:60,window:'',addressMissing:!p.address?.trim()};
+const profile=p=>{const pr=G.profiles[p.name]||{minutes:['food','cafe'].includes(p.category)?45:60,window:'',addressMissing:!p.address?.trim()};return{...pr,minutes:Number(p.duration)||pr.minutes};};
 const publicArea=p=>T.opening(p)?.kind==='public';
 const far=p=>['Polonezköy','Şile Saklıgöl','Solar Beach','Otagtepe Park','Bayramoğlu Döner'].includes(p.name);
 function interval(p,d){const r=T.opening(p);if(!r||r.kind)return null;const h=T.hoursText(r,d).match(/(\d\d:\d\d)[–-](\d\d:\d\d)/);if(!h)return null;let a=C.minutes(h[1]),b=h[2]==='24:00'?1440:C.minutes(h[2]);if(b<=a)b+=1440;return{start:a,end:b,last:r.lastEntry?C.minutes(r.lastEntry):null};}
