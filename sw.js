@@ -1,5 +1,5 @@
-const CACHE='rahlati-v43';
-const ASSETS=['./','./index.html','./style.css?v=43','./upgrade.css?v=43','./planner-core.js?v=43','./app.js?v=43','./upgrade.js?v=43','./preview.js?v=43','./istanbul-preview.json?v=43','./transit.js?v=43','./transit.css?v=43','./icon.svg','./manifest.webmanifest'];
+const CACHE='rahlati-v44';
+const ASSETS=['./','./index.html','./style.css?v=44','./upgrade.css?v=44','./planner-core.js?v=44','./app.js?v=44','./upgrade.js?v=44','./preview.js?v=44','./istanbul-preview.json?v=44','./venue-guide.js?v=44','./trip-assistant.js?v=44','./transit.js?v=44','./transit.css?v=44','./icon.svg','./manifest.webmanifest'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('rahlati-')&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{
