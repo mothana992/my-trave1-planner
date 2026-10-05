@@ -1,5 +1,5 @@
-const CACHE='rahlati-v41';
-const ASSETS=['./','./index.html','./style.css?v=41','./upgrade.css?v=41','./planner-core.js?v=41','./app.js?v=41','./upgrade.js?v=41','./preview.js?v=41','./istanbul-preview.json?v=41','./icon.svg','./manifest.webmanifest'];
+const CACHE='rahlati-v42';
+const ASSETS=['./','./index.html','./style.css?v=42','./upgrade.css?v=42','./planner-core.js?v=42','./app.js?v=42','./upgrade.js?v=42','./preview.js?v=42','./istanbul-preview.json?v=42','./transit.js?v=42','./transit.css?v=42','./icon.svg','./manifest.webmanifest'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('rahlati-')&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{
