@@ -3,3 +3,5 @@
 .food-option{display:flex;justify-content:space-between;align-items:center;gap:12px;border-top:1px solid #dce5de;padding:15px 0}.food-option small{display:block;font-size:12px;line-height:1.7;color:#637369;margin-top:5px}.food-option .action-bar{flex-shrink:0}.daily-food>summary{margin-bottom:10px}@media(max-width:600px){.food-option{flex-direction:column;align-items:stretch}.food-option .action-bar{margin:0}}
 
 .choice-row[hidden]{display:none!important}.daily-food h4{margin:24px 0 8px;color:#325848}.simple-help .action-bar{gap:8px}
+
+.personal-note{background:#fff7dd;border-inline-start:3px solid #e7b23e;padding:10px 12px;margin:10px 0;border-radius:10px}.personal-note p{white-space:pre-wrap;overflow-wrap:anywhere;margin:6px 0;line-height:1.7}.venue-price{background:#eff7f6;border-radius:10px;padding:10px 12px;margin:10px 0}.venue-price p{font-size:.86rem;margin:5px 0}.venue-price small{display:block;line-height:1.5}.sync-summary{padding:10px 14px;margin:8px 0;background:#e8f5ef;border-radius:12px}.food-option .personal-note{font-size:.9rem}.flights p{overflow-wrap:anywhere}
