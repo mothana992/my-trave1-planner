@@ -21,11 +21,12 @@ Object.assign(rules,{
 'Istanbul Aquarium':{closed:[],hours:'10:00–19:00',byDay:{0:'10:00–20:00',6:'10:00–20:00'},source:'https://www.istanbulakvaryum.com/plan-your-visit/visiting-hours'}
 });
 Object.assign(rules,globalThis.VenueGuide?.hours||{});
+for(const [name,lastEntry] of Object.entries({'Topkapi Palace Museum':'17:00','Dolmabahçe Palace':'17:00','Beylerbeyi Palace':'17:00','Istanbul Archaeological Museums':'17:30','Turkish & Islamic Arts Museum':'17:30','Galata Tower':'18:14'}))rules[name].lastEntry=lastEntry;
 const weekday=d=>new Date(d+'T12:00:00Z').getUTCDay();
 const opening=p=>p.openingHours&&typeof p.openingHours==='object'&&Array.isArray(p.openingHours.closed)?p.openingHours:rules[p.name];
 const closed=(p,d)=>!!opening(p)?.closed?.includes(weekday(d));
 const coord=p=>PlannerCore.coordinates(p);
-const query=p=>p?.transitAddress?p.transitAddress:p?.preferAddress?[p.name,p.address].filter(Boolean).join(', '):coord(p)?`${p.lat},${p.lon}`:[p?.name,p?.address||trip()?.destination].filter(Boolean).join(', ');
+const query=p=>p?.transitAddress?p.transitAddress:p?.preferAddress?[p.name,p.address].filter(Boolean).join(', '):coord(p)?`${p.lat},${p.lon}`:[p?.name,p?.address||(trip()?.planVersion===45?'İstanbul, Türkiye':trip()?.destination)].filter(Boolean).join(', ');
 function transitUrl(p,origin){const u=new URL('https://www.google.com/maps/dir/');u.searchParams.set('api','1');u.searchParams.set('destination',query(p));u.searchParams.set('travelmode','transit');if(origin)u.searchParams.set('origin',query(origin));return u.href;}
 function main(x,d){return x.places.filter(p=>p.date===d&&p.listId!=='extra').sort((a,b)=>(a.order||0)-(b.order||0));}
 function predecessor(x,p){const list=main(x,p.date),i=list.findIndex(v=>v.id===p.id);return i>0?list[i-1]:x.hotel;}
