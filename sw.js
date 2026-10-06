@@ -1,5 +1,5 @@
-const CACHE='rahlati-v51';
-const ASSETS=['./','./index.html','./style.css?v=51','./upgrade.css?v=51','./planner-core.js?v=51','./app.js?v=51','./upgrade.js?v=51','./preview.js?v=51','./istanbul-preview.json?v=51','./venue-guide.js?v=51','./trip-assistant.js?v=51','./transit.js?v=51','./transit.css?v=51','./trip-plan.js?v=51','./wanderlog-sync-data.js?v=51','./venue-costs.js?v=51','./wanderlog-sync.js?v=51','./simple.js?v=51','./simple.css?v=51','./icon.svg','./manifest.webmanifest'];
+const CACHE='rahlati-v52';
+const ASSETS=['./','./index.html','./style.css?v=52','./upgrade.css?v=52','./planner-core.js?v=52','./app.js?v=52','./upgrade.js?v=52','./preview.js?v=52','./istanbul-preview.json?v=52','./venue-guide.js?v=52','./trip-assistant.js?v=52','./transit.js?v=52','./transit.css?v=52','./trip-plan.js?v=52','./wanderlog-sync-data.js?v=52','./venue-costs.js?v=52','./wanderlog-sync.js?v=52','./simple.js?v=52','./simple.css?v=52','./icon.svg','./manifest.webmanifest'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('rahlati-')&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{
